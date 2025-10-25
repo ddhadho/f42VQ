@@ -1,10 +1,12 @@
 pub mod error;
 pub mod wal;
-// pub mod memtable;  // Uncomment later
-// pub mod sstable;   // Uncomment later
+pub mod memtable;
+pub mod storage_engine;
 
-// Re-export commonly used types
 pub use error::{Result, StorageError};
+pub use wal::Wal;
+pub use memtable::MemTable;
+pub use storage_engine::StorageEngine;
 
 // Core types that everything uses
 pub type Key = Vec<u8>;

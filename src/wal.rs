@@ -1,9 +1,8 @@
 use crate::{Entry, OpType, Result, StorageError};
-use bytes::{Buf, BufMut, Bytes, BytesMut};
+use bytes::{Buf, BufMut, BytesMut};
 use crc32fast::Hasher;
 use std::fs::{File, OpenOptions};
-use std::io::{Read, Seek, SeekFrom, Write};
-use std::path::{Path, PathBuf};
+use std::io::{Read, Seek, SeekFrom, Write};use std::path::{Path, PathBuf};
 
 /// Write-Ahead Log
 /// 
