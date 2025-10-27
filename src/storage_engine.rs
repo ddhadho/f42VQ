@@ -5,6 +5,7 @@ use std::time::SystemTime;
 pub struct StorageEngine {
     wal: Wal,
     memtable: MemTable,
+    #[allow(dead_code)]
     wal_path: PathBuf,
     memtable_max_size: usize,
 }

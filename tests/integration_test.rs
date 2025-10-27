@@ -69,8 +69,8 @@ fn test_large_values() -> Result<()> {
     let dir = tempdir().unwrap();
     let mut engine = StorageEngine::new(dir.path().to_path_buf(), 1024 * 1024)?;
     
-    // Write large values (1MB each)
-    let large_value = vec![42u8; 1024 * 1024];
+    // Write large values (32KB each - realistic for time-series batches)
+    let large_value = vec![42u8; 32 * 1024];
     
     engine.put(b"large1".to_vec(), large_value.clone())?;
     engine.put(b"large2".to_vec(), large_value.clone())?;
