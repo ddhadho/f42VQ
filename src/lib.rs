@@ -2,6 +2,7 @@ pub mod error;
 pub mod wal;
 pub mod memtable;
 pub mod storage_engine;
+pub mod sstable;
 
 pub use error::{Result, StorageError};
 pub use wal::Wal;

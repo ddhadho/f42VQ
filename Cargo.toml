@@ -10,6 +10,7 @@ crossbeam = "0.8"
 parking_lot = "0.12"
 snap = "1.1"
 thiserror = "2.0.17"
+probabilistic-collections = "0.7" 
 
 [dev-dependencies]
 tempfile = "3.23.0"
