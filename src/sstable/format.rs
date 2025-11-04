@@ -164,23 +164,28 @@ impl IndexEntry {
     }
     
     pub fn decode(data: &mut &[u8]) -> Result<Self> {
-        if data.len() < 2 {
+        // Need at least 2 bytes for key length
+        if data.remaining() < 2 {
             return Err(crate::StorageError::InvalidFormat(
-                "Index entry too short".into()
+                "Index entry too short for key length".into()
             ));
         }
         
         let key_len = data.get_u16_le() as usize;
         
+        // After reading key_len, we need: key + offset (8) + size (4)
         if data.remaining() < key_len + 12 {
             return Err(crate::StorageError::InvalidFormat(
-                "Index entry truncated".into()
+                format!("Index entry truncated: need {} bytes, have {}", 
+                        key_len + 12, data.remaining())
             ));
         }
         
-        let first_key = data[..key_len].to_vec();
-        data.advance(key_len);
+        // Read the key
+        let mut first_key = vec![0u8; key_len];
+        data.copy_to_slice(&mut first_key);
         
+        // Read offset and size
         let offset = data.get_u64_le();
         let size = data.get_u32_le();
         

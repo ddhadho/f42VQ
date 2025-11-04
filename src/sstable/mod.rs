@@ -6,7 +6,7 @@ pub mod format;
 pub mod block;
 pub mod bloom;
 pub mod writer;
-//pub mod reader;
+pub mod reader;
 
-//pub use writer::SsTableWriter;
-// pub use reader::SsTableReader;  // Tomorrow
+pub use writer::SsTableWriter;
+pub use reader::SsTableReader; 

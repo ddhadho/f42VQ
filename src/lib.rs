@@ -8,6 +8,7 @@ pub use error::{Result, StorageError};
 pub use wal::Wal;
 pub use memtable::MemTable;
 pub use storage_engine::StorageEngine;
+pub use sstable::{SsTableWriter, SsTableReader};
 
 // Core types that everything uses
 pub type Key = Vec<u8>;

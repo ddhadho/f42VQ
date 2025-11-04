@@ -46,8 +46,24 @@ impl BloomFilter {
     
     /// Check if key might be in the filter
     pub fn might_contain(&self, _key: &[u8]) -> bool {
-        // For now, always return true (no filtering)
-        // We'll implement proper checking later
-        true
+        true  // Placeholder
+    }
+    
+    
+    /// Alias for might_contain (reader uses this name)
+    pub fn contains(&self, key: &[u8]) -> bool {
+        self.might_contain(key)
+    }
+    
+    /// Decode bloom filter from bytes
+    pub fn decode(data: &[u8]) -> crate::Result<Self> {
+        Ok(BloomFilter {
+            _data: data.to_vec(),
+        })
+    }
+    
+    /// Serialize bloom filter
+    pub fn encode(&self) -> Vec<u8> {
+        self._data.clone()
     }
 }

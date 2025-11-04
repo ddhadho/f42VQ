@@ -8,6 +8,9 @@ pub enum StorageError {
     #[error("Corrupted data: {0}")]
     Corruption(String),
     
+    #[error("Corrupted data: {0}")]
+    CorruptedData(String), 
+    
     #[error("Invalid format: {0}")]
     InvalidFormat(String),
     
