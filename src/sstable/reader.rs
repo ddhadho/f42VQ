@@ -150,7 +150,7 @@ impl SsTableReader {
     fn read_bloom_filter(file: &mut File, footer: &Footer) -> Result<BloomFilter> {
         if footer.bloom_size == 0 {
             // No bloom filter in file (placeholder writer)
-            return Ok(BloomFilter::new(Vec::new()));
+            return Ok(BloomFilter::new(1000, 0.01));
         }
         
         file.seek(SeekFrom::Start(footer.bloom_offset))?;
@@ -424,6 +424,77 @@ mod tests {
         assert_eq!(results.len(), 5);
         assert_eq!(results[0].0, b"key03");
         assert_eq!(results[4].0, b"key07");
+        
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod benchmark {
+    use super::*;
+    use crate::sstable::writer::SsTableWriter;
+    use crate::sstable::format::DEFAULT_BLOCK_SIZE;
+    use tempfile::TempDir;
+    use std::time::Instant;
+    
+    #[test]
+    #[ignore] // Run with: cargo test benchmark_bloom_filter_impact -- --ignored --nocapture
+    fn benchmark_bloom_filter_impact() -> Result<()> {
+        println!("\n=== Bloom Filter Performance Benchmark ===\n");
+        
+        let temp_dir = TempDir::new()?;
+        let path = temp_dir.path().join("benchmark.sst");
+        
+        // Write SSTable with 1000 keys
+        let mut writer = SsTableWriter::new(path.clone(), DEFAULT_BLOCK_SIZE)?;
+        for i in 0..1000 {
+            let key = format!("key_{:06}", i);
+            let value = format!("value_{}", i);
+            writer.add(key.as_bytes(), value.as_bytes(), i as u64)?;
+        }
+        writer.finish()?;
+        
+        // Open reader
+        let mut reader = SsTableReader::open(path)?;
+        
+        println!("SSTable created with 1,000 keys");
+        println!("Bloom filter stats: {:?}\n", reader.bloom_filter.stats());
+        
+        // Benchmark 1: Keys that exist (bloom filter won't help much)
+        let start = Instant::now();
+        let mut hits = 0;
+        for i in 0..1000 {
+            let key = format!("key_{:06}", i);
+            if reader.get(key.as_bytes())?.is_some() {
+                hits += 1;
+            }
+        }
+        let duration_hits = start.elapsed();
+        println!("Present keys (1000 lookups):");
+        println!("  Hits: {}/1000", hits);
+        println!("  Time: {:?}", duration_hits);
+        println!("  Avg: {:.2}μs per lookup", duration_hits.as_micros() as f64 / 1000.0);
+        
+        // Benchmark 2: Keys that DON'T exist (bloom filter filters most)
+        let start = Instant::now();
+        let mut misses = 0;
+        for i in 10000..11000 {
+            let key = format!("key_{:06}", i);
+            if reader.get(key.as_bytes())?.is_none() {
+                misses += 1;
+            }
+        }
+        let duration_misses = start.elapsed();
+        println!("\nMissing keys (1000 lookups):");
+        println!("  Misses: {}/1000", misses);
+        println!("  Time: {:?}", duration_misses);
+        println!("  Avg: {:.2}μs per lookup", duration_misses.as_micros() as f64 / 1000.0);
+        
+        // Calculate speedup
+        let speedup = duration_hits.as_micros() as f64 / duration_misses.as_micros() as f64;
+        println!("\n📊 Performance Impact:");
+        println!("  Missing keys are {:.1}x FASTER than present keys", speedup);
+        println!("  (Bloom filter rejects ~99% without disk I/O)");
         
         Ok(())
     }
